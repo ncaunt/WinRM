@@ -323,7 +323,7 @@ module WinRM
     # @see http://msdn.microsoft.com/en-us/library/aa394606(VS.85).aspx
     # @param [String] wql The WQL query
     # @return [Hash] Returns a Hash that contain the key/value pairs returned from the query.
-    def run_wql(wql)
+    def run_wql(wql, namespace = 'root/cimv2/*')
 
       body = { "#{NS_WSMAN_DMTF}:OptimizeEnumeration" => nil,
         "#{NS_WSMAN_DMTF}:MaxElements" => '32000',
@@ -334,7 +334,7 @@ module WinRM
       builder = Builder::XmlMarkup.new
       builder.instruct!(:xml, :encoding => 'UTF-8')
       builder.tag! :env, :Envelope, namespaces do |env|
-        env.tag!(:env, :Header) { |h| h << Gyoku.xml(merge_headers(header,resource_uri_wmi,action_enumerate)) }
+        env.tag!(:env, :Header) { |h| h << Gyoku.xml(merge_headers(header,resource_uri_wmi(namespace),action_enumerate)) }
         env.tag!(:env, :Body) do |env_body|
           env_body.tag!("#{NS_ENUM}:Enumerate") { |en| en << Gyoku.xml(body) }
         end
@@ -438,7 +438,7 @@ module WinRM
         :attributes! => {"#{NS_WSMAN_DMTF}:ResourceURI" => {'mustUnderstand' => true}}}
     end
 
-    def resource_uri_wmi(namespace = 'root/cimv2/*')
+    def resource_uri_wmi(namespace)
       {"#{NS_WSMAN_DMTF}:ResourceURI" => "http://schemas.microsoft.com/wbem/wsman/1/wmi/#{namespace}",
         :attributes! => {"#{NS_WSMAN_DMTF}:ResourceURI" => {'mustUnderstand' => true}}}
     end
